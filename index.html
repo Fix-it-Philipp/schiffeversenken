@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<title>WebSocket Client</title>
+</head>
+<body>
+<h1>WebSocket Test</h1>
+
+<div id="connection"></div>
+<div id="log"></div>
+
+<script>
+    const ws_server = 'ws://192.168.129.116:8080/shipwar/';
+    const connectionDiv = document.getElementById('connection');
+    const logDiv = document.getElementById('log');
+    let socket;
+
+    function connectionStatus(param){
+        if (param === "connected") {
+            while (connectionDiv.hasChildNodes()) {
+                connectionDiv.removeChild(connectionDiv.firstChild); 
+            }
+            const input = document.createElement('input');
+            input.type = "text"; input.placeholder = "Nachricht eingeben"; input.id = "messageInput";
+            const sndBtn = document.createElement('button');
+            sndBtn.id = "sendBtn"; sndBtn.textContent = "Senden";
+            const discBtn = document.createElement('button');
+            discBtn.id = "disconnectBtn"; discBtn.textContent = "Trennen";
+            connectionDiv.appendChild(input);
+            connectionDiv.appendChild(sndBtn);
+            connectionDiv.appendChild(discBtn);
+            
+            document.getElementById('disconnectBtn').onclick = () => {
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    socket.close();
+                }
+            }
+
+            document.getElementById('sendBtn').onclick = () => {
+                const message = document.getElementById('messageInput').value;
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    // Beispiel: Client sendet eine Nachricht an einen anderen Client
+                    socket.send(JSON.stringify({
+                        type: 'message',
+                        targetID: 'ziel-client-id',
+                        message: JSON.stringify(message)
+                    }));
+                    log(`Gesendet: ${message}`);
+                } else {
+                    log('Verbindung ist nicht offen.');
+                }
+            };
+            
+        } else {
+            while (connectionDiv.hasChildNodes()) {
+                connectionDiv.removeChild(connectionDiv.firstChild); 
+            }
+            const input = document.createElement('input');
+            input.type = "text"; input.name = "username"; input.id = "username"; input.required = true;
+            const button = document.createElement('button');
+            button.id = "connectBtn"; button.textContent = "Verbinden";
+            connectionDiv.appendChild(input);
+            connectionDiv.appendChild(button);
+
+            document.getElementById('connectBtn').onclick = () => {
+                socket = new WebSocket(ws_server);
+                socket.onopen = () => {
+                    const username = connectionDiv.querySelector('#username').value;
+                    // Sende den Benutzernamen an den Server
+                    const message = { type: 'register', username: username, message: "Registrieren" };
+                    socket.send(JSON.stringify(message));
+                    connectionStatus("connected");
+                    log('Verbindung hergestellt.');
+                };
+
+                socket.onmessage = (event) => {
+                    log(event.data);
+                };
+
+                socket.onclose = () => {
+                    connectionStatus("");
+                    log('Verbindung geschlossen.');
+                };
+
+                socket.onerror = (error) => {
+                    log(`Fehler: ${error.message}`);
+                };
+            };
+        }
+    }
+    connectionStatus("");
+
+function log(message) {
+  const p = document.createElement('p');
+  p.textContent = message;
+  logDiv.appendChild(p);
+}
+</script>
+</body>
+</html>

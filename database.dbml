@@ -1,0 +1,47 @@
+Table Spiel {
+    Spiel_id int [pk, increment]
+    Status char [note: "Wartend, InProgress, Beendet"]
+    Startzeit timestamp
+    Endzeit timestamp
+}
+
+Table Spieler {
+    Spieler_id int [pk, increment]
+    Benutzername char
+    Email char [unique]
+    Verbindungs_id char
+    Passwort char [note: "Hash"]
+}
+
+Table Teilnahme {
+    Teilnahme_id int [pk]
+    Spiel_id int [ref: > Spiel.Spiel_id]
+    Spieler_id int [ref: > Spieler.Spieler_id]
+    Rolle char [note: "Spieler_1 oder Spieler_2"]
+    Status char [note: "Platzierung abgeschlossen, Am Zug, Versenkt"]
+}
+
+Table Schiff {
+    Schiff_id int [pk]
+    Spieler_id int [ref: > Spieler.Spieler_id]
+    Typ char [note: "Scout, Kreuzer, Zerstörer, Flugzeugträger"]
+    Segmente int [note: "Anzahl Segmente 2-5"]
+    Positionen char [note: "json an Koordinaten"]
+}
+
+Table Schuss {
+    Schuss_id int [pk, increment]
+    Spiel_id int [ref: > Spiel.Spiel_id]
+    Spieler_id int [ref: > Spieler.Spieler_id]
+    Koordinate_x int 
+    Koordinate_y int
+    Ergebnis char [note: "Treffer, Wasser, Versenkt"]
+    Zeitstempel timestamp
+}
+
+Table Chat {
+    Chat_id int [pk, increment]
+    Spiel_id int [ref: > Spiel.Spiel_id]
+    Nachricht char
+    Zeitstempel timestamp
+}
