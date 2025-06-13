@@ -1,0 +1,5 @@
+node_modules/
+alte dateien/
+.env
+config.json
+*.xcf
